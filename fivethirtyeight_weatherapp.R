@@ -6,7 +6,6 @@ names(data) <- c("ID","CheckDaily","CheckMethod","SpecificMethodText","Smartwatc
 
 require(ggplot2)
 require(MASS)
-require(gdata)
 require(reshape)
 require(scales)
 
@@ -21,47 +20,40 @@ data$HouseholdIncome <- factor(data$HouseholdIncome, levels=c(
   "$125,000 to $149,999","$150,000 to $174,999","$175,000 to $199,999", 
   "$200,000 and up","Prefer not to answer"))
 
-ggplot(data, aes(x=HouseholdIncome, fill=CheckDaily)) + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggplot(data, aes(x=HouseholdIncome, fill=CheckMethod)) + geom_bar(fill=) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggplot(data, aes(x=HouseholdIncome, fill=SmartwatchCheck)) + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggplot(data, aes(x = HouseholdIncome)) + 
-  geom_bar(aes(fill = CheckMethod), position = 'fill') + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  ggtitle("How Different Household Income Brackets Check the Weather")
+#######
+#Autogen a bunch of plots to explore data, look for interesting bits.
+#######
 
-
-ggplot(data, aes(x=Gender)) + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggplot(data, aes(x=USRegion)) + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggplot(data, aes(x=HouseholdIncome)) + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-
-#LOOP not working.  Figure that out.
-#for variable1 = 1 to last variable
-  #for variable2 = 1 to last variable
-    #ggplot statement
-for (inx in 1:dim(data)[2]) {
-  for (iny in 1:dim(data)[2]) {
-    
-    #if(inx==iny) next()
-    
-    #showplot1<-function(data, inx, iny) {
-      #dat <- data
-      p <- ggplot(data, aes(x=data[,inx], y=data[,iny])) +
-        geom_bar(aes(fill = data[,iny]), position = 'fill') + 
-        theme(axis.text.x = element_text(angle = 45, hjust = 1))
-      print(p)
+#Plot the stacked bar plots for all combinations to explore data.
+#These show relative response numbers; ratios in next set of plots.
+#Note col5 has not yet been cleaned so those plots are strange.
+colnames <- colnames(data)
+for (i in 2:dim(data)[2]) {
+  for (j in 3:dim(data)[2]) {
+    p <- ggplot(data, aes(x=data[[i]], fill=data[[j]])) + geom_bar() + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      xlab(colnames[i]) + ylab(colnames[j])
+    print(p)
+    print(c(i,j))
   }
 }
 
+#Plot the stacked percentage plots for all combinations to look for trends.
+#Gives all combinations of the ordinal and nominal levels.
+#Note col5 has not yet been cleaned so those plots are strange.
+colnames <- colnames(data)
+for (i in 2:dim(data)[2]) {
+  for (j in 3:dim(data)[2]) {
+    p <- ggplot(data, aes(x=data[[i]])) +
+      geom_bar(aes(fill = data[[j]]), position = 'fill') + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      xlab(colnames[i]) + ylab(colnames[j])
+    print(p)
+    print(c(i,j))
+  }
+}
 
-
-#try different plots to visualize
-ggplot(data, aes(x=Response.2)) + geom_bar(labels = percent_format())  #+ 
-  xlab("Relationship Status") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  ylim(0,1000)
 
 #ChiSq between married and cohabitating: Do married and single but
 #cohabitating partners have the same expected distribution of time
@@ -76,7 +68,3 @@ data.statuspartnered[,3] <- as.factor(as.character(data.statuspartnered[,3]))
 data.statuspartnered[,5] <- as.factor(as.character(data.statuspartnered[,5]))
 tbl <- table(data.statuspartnered[,3], data.statuspartnered[,5])
 chisq.test(tbl)  #not significantly different; p=0.2114
-
-#seeing if non markdown works to push to git
-#pull instead
-
