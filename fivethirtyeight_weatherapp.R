@@ -76,3 +76,6 @@ data.statuspartnered[,3] <- as.factor(as.character(data.statuspartnered[,3]))
 data.statuspartnered[,5] <- as.factor(as.character(data.statuspartnered[,5]))
 tbl <- table(data.statuspartnered[,3], data.statuspartnered[,5])
 chisq.test(tbl)  #not significantly different; p=0.2114
+
+#seeing if non markdown works to push to git
+
