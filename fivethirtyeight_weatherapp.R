@@ -96,8 +96,12 @@ test$text <- as.factor(trim(test$text))
 #append the 'cleaned' vector back to original dataframe
 data$CleanMethodText.temp <- test$text
 
+
 #manually clean remaining 94 categories
 #Some of these are pushing NA observations -- fix that next..
+data$CleanMethodText <- as.character(data$CleanMethodText)
+data$CleanMethodText.temp <- as.character(data$CleanMethodText.temp)
+
 data$CleanMethodText[which(data$CleanMethodText.temp == "1 weather")] <- "1weather"
 data$CleanMethodText[which(data$CleanMethodText.temp == "1weather")] <- "1weather"
 data$CleanMethodText[which(data$CleanMethodText.temp == "accuweather")] <- "accuweather"
@@ -191,13 +195,10 @@ data$CleanMethodText[which(data$CleanMethodText.temp == "yahoo weather app")] <-
 data$CleanMethodText[which(data$CleanMethodText.temp == "yahoo weather iphone")] <- "yahoo"
 data$CleanMethodText[which(data$CleanMethodText.temp == "yo window")] <- "look outside"
 data$CleanMethodText[which(data$CleanMethodText.temp == "yrno")] <- "yr.no"
+                                                                                                                                                    test$text=="yrno", "yr.no", NA))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) 
+#coerce the cleaned text back ito a factor format.  28 lvls now.
+data$CleanMethodText <- as.factor(data$CleanMethodText)
 
-
-test$text=="yo window", "look outside", ifelse(
-                                                                                                                                                            test$text=="yrno", "yr.no", NA))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) 
-
-#cbind the cleaned 'method' back into the original data set.
-data$cleanMethodText <- as.factor(test$textclean)
 
   
   
