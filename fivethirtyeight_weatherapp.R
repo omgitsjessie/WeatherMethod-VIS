@@ -42,7 +42,7 @@ for (i in 2:dim(data)[2]) {
 
 #Plot all stacked percentage plots to look for ratio trends.
 #Gives all combinations of the ordinal and nominal levels.
-#Note col5 has not yet been cleaned so those plots are strange.
+#Note col5 has been cleaned (c11) so c5,c10 plots are strange.
 colnames <- colnames(data)
 for (i in 2:dim(data)[2]) {
   for (j in 3:dim(data)[2]) {
@@ -99,8 +99,10 @@ data$CleanMethodText.temp <- test$text
 
 #manually clean remaining 94 categories
 #Some of these are pushing NA observations -- fix that next..
-data$CleanMethodText <- as.character(data$CleanMethodText)
+#data$CleanMethodText <- as.character(data$CleanMethodText)
 data$CleanMethodText.temp <- as.character(data$CleanMethodText.temp)
+
+data$CleanMethodText <- NULL
 
 data$CleanMethodText[which(data$CleanMethodText.temp == "1 weather")] <- "1weather"
 data$CleanMethodText[which(data$CleanMethodText.temp == "1weather")] <- "1weather"
@@ -197,13 +199,38 @@ data$CleanMethodText[which(data$CleanMethodText.temp == "yo window")] <- "look o
 data$CleanMethodText[which(data$CleanMethodText.temp == "yrno")] <- "yr.no"
                                                                                                                                                     test$text=="yrno", "yr.no", NA))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) 
 #coerce the cleaned text back ito a factor format.  28 lvls now.
+
 data$CleanMethodText <- as.factor(data$CleanMethodText)
 
+#Subset to incude only participants who use a specific website or app
+data.spec <- subset(data, select=c(2,3,5,6,7,8,9,11), 
+                    data$CheckMethod == "A specific website or app (please provide the answer)" & 
+                    data$CleanMethodText != "default" & 
+                    data$CleanMethodText != "vague" &  
+                    data$CleanMethodText != "ask a human" & 
+                    data$CleanMethodText != "look outside")
+#Check table to see if you ruined the factor ordering
+table(data.spec$CleanMethodText)
 
-  
-  
-  
-  
-  
-  
-  
+#Reorganize factors decreasing order.  So bar plot looks better.
+#levels(data.spec$CleanMethodText)<-levels(data.spec$CleanMethodText)[rev(order(tabulate(data.spec$CleanMethodText)))] 
+barplot(sort(table(data.spec$CleanMethodText), decreasing = TRUE))
+
+#Re-do plots, specifically looking at all categories v specific text  
+colnames <- colnames(data.spec)
+for (i in 1:dim(data.spec)[2]) {
+  for (j in 8:dim(data.spec)[2]) {
+    p <- ggplot(data.spec, aes(x=data.spec[[i]])) +
+      geom_bar(aes(fill = data.spec[[j]]), position = 'fill') + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      xlab(colnames[i]) + ylab(colnames[j]) + 
+      guides(fill=guide_legend(title=colnames[j])) + 
+      ggtitle(paste("% of Responders: ", colnames[i], "vs ", colnames[j]))
+    print(p)
+    print(c(i,j))
+  }
+}
+
+p <- ggplot(data.spec, aes(x=CleanMethodText)) + geom_histogram() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  xlab("Specific App/Website") + ylab("Number of Responses")
+
