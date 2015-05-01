@@ -57,22 +57,6 @@ for (i in 2:dim(data)[2]) {
   }
 }
 
-
-#ChiSq between married and cohabitating: Do married and single but
-#cohabitating partners have the same expected distribution of time
-#not sleeping together
-tbl <- table(data[,3], data[,5])
-chisq.test(tbl)  #sig, so they're different--but this is across ALL statuses.
-
-data.statuspartnered <- subset(data, data[,3]=="Married" | 
-                              data[,3]=="Single, but cohabiting with 
-                              a significant other")
-#Drop empty levels so you don't have cells with 0-counts.
-data.statuspartnered[,3] <- as.factor(as.character(data.statuspartnered[,3]))
-data.statuspartnered[,5] <- as.factor(as.character(data.statuspartnered[,5]))
-tbl <- table(data.statuspartnered[,3], data.statuspartnered[,5])
-chisq.test(tbl)  #not significantly different; p=0.2114
-
 #Try to collapse the specific method levels into groups.
 #Text cleaning first.
 require(tm)
@@ -85,6 +69,7 @@ method.corpus <- tm_map(method.corpus, content_transformer(tolower))
 #Remove punctuation
 method.corpus <- tm_map(method.corpus, removePunctuation)
 #Strip stopwords - not applicable here, but future stuff consider it.
+method.corpus <- tm_map(method.corpus, removeWords, stopwords("english"))
 #Strip white space
 method.corpus <- tm_map(method.corpus, stripWhitespace)
 
@@ -92,13 +77,11 @@ test <- data.frame(text=unlist(sapply(method.corpus, `[`, "content")),
                    stringsAsFactors=T)
 levels(test$text)
 test$text <- as.factor(trim(test$text))
-  #the tm commands + trim function got us from 122 levels down to 94.  
+#the tm commands + trim function got us from 122 levels down to 94.  
 #append the 'cleaned' vector back to original dataframe
 data$CleanMethodText.temp <- test$text
 
 
-#manually clean remaining 94 categories
-#Some of these are pushing NA observations -- fix that next..
 #data$CleanMethodText <- as.character(data$CleanMethodText)
 data$CleanMethodText.temp <- as.character(data$CleanMethodText.temp)
 
@@ -144,9 +127,9 @@ data$CleanMethodText[which(data$CleanMethodText.temp == "myphone")] <- "vague"
 data$CleanMethodText[which(data$CleanMethodText.temp == "national weather service")] <- "national weather service"
 data$CleanMethodText[which(data$CleanMethodText.temp == "national weather service site")] <- "national weather service"
 data$CleanMethodText[which(data$CleanMethodText.temp == "nice")] <- "vague"
-data$CleanMethodText[which(data$CleanMethodText.temp == "noaa app")] <- "noaa"
-data$CleanMethodText[which(data$CleanMethodText.temp == "noaa weather channel")] <- "noaa"
-data$CleanMethodText[which(data$CleanMethodText.temp == "noaagov")] <- "noaa"
+data$CleanMethodText[which(data$CleanMethodText.temp == "noaa app")] <- "national weather service"
+data$CleanMethodText[which(data$CleanMethodText.temp == "noaa weather channel")] <- "national weather service"
+data$CleanMethodText[which(data$CleanMethodText.temp == "noaagov")] <- "national weather service"
 data$CleanMethodText[which(data$CleanMethodText.temp == "numerous local weather apps")] <- "vague"
 data$CleanMethodText[which(data$CleanMethodText.temp == "one comes iphone")] <- "default"
 data$CleanMethodText[which(data$CleanMethodText.temp == "phone")] <- "vague"
@@ -199,7 +182,6 @@ data$CleanMethodText[which(data$CleanMethodText.temp == "yo window")] <- "look o
 data$CleanMethodText[which(data$CleanMethodText.temp == "yrno")] <- "yr.no"
                                                                                                                                                     test$text=="yrno", "yr.no", NA))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) 
 #coerce the cleaned text back ito a factor format.  28 lvls now.
-
 data$CleanMethodText <- as.factor(data$CleanMethodText)
 
 #Subset to incude only participants who use a specific website or app
@@ -209,12 +191,11 @@ data.spec <- subset(data, select=c(2,3,5,6,7,8,9,11),
                     data$CleanMethodText != "vague" &  
                     data$CleanMethodText != "ask a human" & 
                     data$CleanMethodText != "look outside")
-#Check table to see if you ruined the factor ordering
-table(data.spec$CleanMethodText)
-
-#Reorganize factors decreasing order.  So bar plot looks better.
-#levels(data.spec$CleanMethodText)<-levels(data.spec$CleanMethodText)[rev(order(tabulate(data.spec$CleanMethodText)))] 
-barplot(sort(table(data.spec$CleanMethodText), decreasing = TRUE))
+#change format to drop empty factor levels
+data.spec$CleanMethodText <- as.factor(as.character(data.spec$CleanMethodText))
+#reorder factors by frequency (manually.. for now)
+data.spec$CleanMethodText <- factor(data.spec$CleanMethodText, 
+                                    levels(data.spec$CleanMethodText)[c(13,19,2,18,11,9,21,8,1,3,4,5,6,7,10,12,14,15,16,17,20,22)])
 
 #Re-do plots, specifically looking at all categories v specific text  
 colnames <- colnames(data.spec)
@@ -231,6 +212,12 @@ for (i in 1:dim(data.spec)[2]) {
   }
 }
 
-p <- ggplot(data.spec, aes(x=CleanMethodText)) + geom_histogram() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  xlab("Specific App/Website") + ylab("Number of Responses")
+
+#print(levels(data.spec$CleanMethodText2))
+levels(data.spec$CleanMethodText)
+ggplot(data.spec, aes(x=CleanMethodText)) + geom_bar() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab("Specific App/Website") + ylab("Number of Responses") + 
+  ggtitle("Popularity of Specific Apps/Websites from fivethirtyeight.com Survey")
+
 
